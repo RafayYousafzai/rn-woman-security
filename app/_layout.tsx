@@ -1,5 +1,6 @@
 import { ClerkProvider, ClerkLoaded } from "@clerk/clerk-expo";
 import { Stack } from "expo-router";
+import { PaperProvider } from 'react-native-paper';
 
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
 
@@ -13,7 +14,9 @@ export default function RootLayoutNav() {
   return (
     <ClerkProvider publishableKey={publishableKey}>
       <ClerkLoaded>
-        <Stack />
+        <PaperProvider>
+          <Stack />
+        </PaperProvider>
       </ClerkLoaded>
     </ClerkProvider>
   );
