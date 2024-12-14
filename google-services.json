@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "358008766631",
+    "project_id": "woman-security-6cd7b",
+    "storage_bucket": "woman-security-6cd7b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:358008766631:android:d93e08891997ee63ef1b82",
+        "android_client_info": {
+          "package_name": "com.rafayyousafzai.womansecurity"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDthLLOVro1SCG0dLHMpd_Y5rTrCGjp-iI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
