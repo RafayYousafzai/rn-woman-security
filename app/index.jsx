@@ -9,7 +9,7 @@ const Home = () => {
     return <Redirect href={"/(root)/home"} />;
   }
 
-  return <Redirect href={"/(auth)/welcome"} />;
+  return <Redirect href={"/(auth)/sign-in"} />;
 };
 
 export default Home;
