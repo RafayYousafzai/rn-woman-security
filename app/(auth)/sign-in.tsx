@@ -1,108 +1,218 @@
+import React, { useState, useCallback } from "react";
+import { 
+  Text, 
+  TextInput, 
+  TouchableOpacity, 
+  View, 
+  StyleSheet, 
+  KeyboardAvoidingView, 
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard 
+} from "react-native";
 import { useSignIn } from "@clerk/clerk-expo";
 import { Link, useRouter } from "expo-router";
-import { Text, TextInput, Button, View, StyleSheet } from "react-native";
-import React from "react";
+import { showToast } from "../../components/Toast";
+import { MaterialIcons } from "@expo/vector-icons";
 
 export default function Page() {
   const { signIn, setActive, isLoaded } = useSignIn();
   const router = useRouter();
 
-  const [emailAddress, setEmailAddress] = React.useState("");
-  const [password, setPassword] = React.useState("");
+  const [emailAddress, setEmailAddress] = useState("");
+  const [password, setPassword] = useState("");
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Handle the submission of the sign-in form
-  const onSignInPress = React.useCallback(async () => {
+  const onSignInPress = useCallback(async () => {
     if (!isLoaded) return;
 
-    // Start the sign-in process using the email and password provided
+    // Validate inputs
+    if (!emailAddress || !password) {
+      showToast("Please enter both email and password");
+      return;
+    }
+
+    setIsLoading(true);
     try {
       const signInAttempt = await signIn.create({
         identifier: emailAddress,
         password,
       });
 
-      // If sign-in process is complete, set the created session as active
-      // and redirect the user
       if (signInAttempt.status === "complete") {
         await setActive({ session: signInAttempt.createdSessionId });
+        showToast("Successfully signed in!");
         router.replace("/");
       } else {
-        // If the status isn't complete, check why. User might need to
-        // complete further steps.
+        showToast("Sign-in failed. Please try again.");
         console.error(JSON.stringify(signInAttempt, null, 2));
       }
-    } catch (err) {
-      // See https://clerk.com/docs/custom-flows/error-handling
-      // for more info on error handling
-      console.error(JSON.stringify(err, null, 2));
+    }catch (err) {
+      if (err instanceof Error) {
+        const errorMessage = err.message || "An error occurred";
+        showToast(errorMessage);
+        console.error(err);
+      } else {
+        showToast("An unexpected error occurred");
+        console.error("Unknown error:", err);
+      }
+    }
+    finally {
+      setIsLoading(false);
     }
   }, [isLoaded, emailAddress, password]);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Welcome Back</Text>
-      <TextInput
-        style={styles.input}
-        autoCapitalize="none"
-        value={emailAddress}
-        placeholder="Enter email"
-        placeholderTextColor="#888"
-        onChangeText={setEmailAddress}
-      />
-      <TextInput
-        style={styles.input}
-        value={password}
-        placeholder="Enter password"
-        placeholderTextColor="#888"
-        secureTextEntry={true}
-        onChangeText={setPassword}
-      />
-      <Button title="Sign in" onPress={onSignInPress} color="#4CAF50" />
-      <View style={styles.linkContainer}>
-        <Text style={styles.text}>Don't have an account?</Text>
-        <Link href="/sign-up">
-          <Text style={styles.link}> Sign up</Text>
-        </Link>
-      </View>
-    </View>
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.container}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.inner}>
+          <Text style={styles.title}>Welcome Back</Text>
+          
+          <View style={styles.inputContainer}>
+            <MaterialIcons 
+              name="email" 
+              size={24} 
+              color="#4CAF50" 
+              style={styles.inputIcon} 
+            />
+            <TextInput
+              style={styles.input}
+              autoCapitalize="none"
+              value={emailAddress}
+              placeholder="Email address"
+              placeholderTextColor="#888"
+              keyboardType="email-address"
+              onChangeText={setEmailAddress}
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <MaterialIcons 
+              name="lock" 
+              size={24} 
+              color="#4CAF50" 
+              style={styles.inputIcon} 
+            />
+            <TextInput
+              style={styles.input}
+              value={password}
+              placeholder="Password"
+              placeholderTextColor="#888"
+              secureTextEntry={!isPasswordVisible}
+              onChangeText={setPassword}
+            />
+            <TouchableOpacity 
+              onPress={() => setIsPasswordVisible(!isPasswordVisible)}
+              style={styles.eyeIcon}
+            >
+              <MaterialIcons 
+                name={isPasswordVisible ? "visibility" : "visibility-off"} 
+                size={24} 
+                color="#888" 
+              />
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity 
+            style={[
+              styles.signInButton, 
+              isLoading && styles.disabledButton
+            ]}
+            onPress={onSignInPress}
+            disabled={isLoading}
+          >
+            <Text style={styles.signInButtonText}>
+              {isLoading ? "Signing In..." : "Sign In"}
+            </Text>
+          </TouchableOpacity>
+
+          <View style={styles.signUpContainer}>
+            <Text style={styles.signUpText}>Don't have an account?</Text>
+            <Link href="/sign-up" asChild>
+              <TouchableOpacity>
+                <Text style={styles.signUpLink}>Sign Up</Text>
+              </TouchableOpacity>
+            </Link>
+          </View>
+        </View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
     backgroundColor: "#f9f9f9",
+  },
+  inner: {
+    flex: 1,
+    justifyContent: "center",
     padding: 20,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "bold",
-    marginBottom: 20,
+    marginBottom: 30,
     color: "#333",
+    textAlign: "center",
   },
-  input: {
-    width: "100%",
-    padding: 15,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 15,
     backgroundColor: "#fff",
+    borderRadius: 10,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  inputIcon: {
+    marginLeft: 15,
+    marginRight: 10,
+  },
+  input: {
+    flex: 1,
+    padding: 15,
     fontSize: 16,
     color: "#333",
   },
-  linkContainer: {
-    flexDirection: "row",
-    marginTop: 20,
-    alignItems: "center",
+  eyeIcon: {
+    padding: 10,
+    marginRight: 10,
   },
-  text: {
+  signInButton: {
+    backgroundColor: "#4CAF50",
+    padding: 15,
+    borderRadius: 10,
+    alignItems: "center",
+    marginTop: 20,
+    elevation: 3,
+  },
+  disabledButton: {
+    backgroundColor: "#A5D6A7",
+  },
+  signInButtonText: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  signUpContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 20,
+  },
+  signUpText: {
     fontSize: 16,
     color: "#555",
   },
-  link: {
+  signUpLink: {
     fontSize: 16,
     color: "#4CAF50",
     fontWeight: "bold",
