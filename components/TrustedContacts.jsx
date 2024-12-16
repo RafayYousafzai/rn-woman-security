@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useEffect } from "react";
 import {
   Modal,
   TouchableOpacity,
@@ -8,36 +9,42 @@ import {
   View,
   StyleSheet,
 } from "react-native";
-
-const allContacts = [
-  { name: "John Doe", phone: "123-456-7890" },
-  { name: "Jane Smith", phone: "987-654-3210" },
-  { name: "Alice Brown", phone: "555-123-4567" },
-  { name: "Bob Johnson", phone: "222-333-4444" },
-  { name: "Charlie Davis", phone: "999-888-7777" },
-  { name: "John Doe", phone: "123-456-7890" },
-  { name: "Jane Smith", phone: "987-654-3210" },
-  { name: "Alice Brown", phone: "555-123-4567" },
-  { name: "Bob Johnson", phone: "222-333-4444" },
-  { name: "Charlie Davis", phone: "999-888-7777" },
-];
+import { database } from "@/lib/firebase/config";
+import { collection, getDocs } from "firebase/firestore";
 
 export default function TrustedContacts() {
   const [visible, setVisible] = useState(false);
-  const [contacts, setContacts] = useState([
-    { name: "John Doe", phone: "123-456-7890" },
-  ]);
+  const [myContacts, setMyContacts] = useState([]);
+  const [allContacts, setAllContacts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
 
   const toggleModal = () => setVisible(!visible);
 
   const removeContact = (index) => {
-    setContacts(contacts.filter((_, i) => i !== index));
+    setMyContacts(myContacts.filter((_, i) => i !== index));
   };
 
+  useEffect(() => {
+    const get = async () => {
+      try {
+        const contacts = [];
+        const querySnapshot = await getDocs(collection(database, "users"));
+        querySnapshot.forEach((doc) => {
+          contacts.push({ id: doc.id, ...doc.data() });
+        });
+        setAllContacts(contacts);
+      } catch (error) {
+        console.error("Error getting documents:", error);
+      }
+    };
+    get();
+  }, []);
+
   const filteredContacts = allContacts
-    .filter((contact) =>
-      contact.name.toLowerCase().includes(searchQuery.toLowerCase())
+    .filter(
+      (contact) =>
+        contact.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+        !myContacts.some((contact) => contact.phone === contact.phone)
     )
     .slice(0, 4);
 
@@ -72,8 +79,8 @@ export default function TrustedContacts() {
                       key={index}
                       style={styles.searchItem}
                       onPress={() => {
-                        setContacts([
-                          ...contacts,
+                        setMyContacts([
+                          ...myContacts,
                           { name: contact.name, phone: contact.phone },
                         ]);
                         setSearchQuery(""); // Clear search bar after adding
@@ -90,7 +97,7 @@ export default function TrustedContacts() {
 
               {/* Trusted Contacts List */}
               <FlatList
-                data={contacts}
+                data={myContacts}
                 keyExtractor={(item, index) => index.toString()}
                 renderItem={({ item, index }) => (
                   <View style={styles.contactItem}>
@@ -147,17 +154,14 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#fff",
   },
   modalContainer: {
-    backgroundColor: "#fff",
-    padding: 20,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
+    padding: 30,
+    width: "100%",
+    height: "100%",
   },
   title: {
     fontSize: 24,
