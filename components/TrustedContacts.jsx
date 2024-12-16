@@ -1,110 +1,232 @@
-import * as React from "react";
-import { Modal } from "react-native";
-import { Text, View } from "react-native";
-import {   Portal, Button,   TextInput } from "react-native-paper";
+import React, { useState } from "react";
+import {
+  Modal,
+  TouchableOpacity,
+  FlatList,
+  TextInput,
+  Text,
+  View,
+  StyleSheet,
+} from "react-native";
+
+const allContacts = [
+  { name: "John Doe", phone: "123-456-7890" },
+  { name: "Jane Smith", phone: "987-654-3210" },
+  { name: "Alice Brown", phone: "555-123-4567" },
+  { name: "Bob Johnson", phone: "222-333-4444" },
+  { name: "Charlie Davis", phone: "999-888-7777" },
+  { name: "John Doe", phone: "123-456-7890" },
+  { name: "Jane Smith", phone: "987-654-3210" },
+  { name: "Alice Brown", phone: "555-123-4567" },
+  { name: "Bob Johnson", phone: "222-333-4444" },
+  { name: "Charlie Davis", phone: "999-888-7777" },
+];
 
 export default function TrustedContacts() {
-  const [visible, setVisible] = React.useState(false);
-  const [contacts, setContacts] = React.useState([
-    { name: "John Doe", phone: "123-456-7890", primary: true },
-    { name: "Jane Smith", phone: "987-654-3210", primary: false },
+  const [visible, setVisible] = useState(false);
+  const [contacts, setContacts] = useState([
+    { name: "John Doe", phone: "123-456-7890" },
   ]);
-
-  const [newContactName, setNewContactName] = React.useState("");
-  const [newContactPhone, setNewContactPhone] = React.useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const toggleModal = () => setVisible(!visible);
 
-  const addContact = () => {
-    if (newContactName && newContactPhone) {
-      setContacts([
-        ...contacts,
-        { name: newContactName, phone: newContactPhone, primary: false },
-      ]);
-      setNewContactName("");
-      setNewContactPhone("");
-    }
+  const removeContact = (index) => {
+    setContacts(contacts.filter((_, i) => i !== index));
   };
 
-  const setPrimary = (index) => {
-    setContacts(
-      contacts.map((contact, i) => ({ ...contact, primary: i === index }))
-    );
-  };
+  const filteredContacts = allContacts
+    .filter((contact) =>
+      contact.name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .slice(0, 4);
 
   return (
-    <View className="flex-1 justify-center items-center">
-      <Button
-        mode="contained"
-        onPress={toggleModal}
-        className="bg-blue-500 py-2 px-4"
-      >
-        Manage Trusted Contacts
-      </Button>
+    <View style={styles.container}>
+      {/* Manage Trusted Contacts Button */}
+      <TouchableOpacity style={styles.manageButton} onPress={toggleModal}>
+        <Text style={styles.manageButtonText}>Manage Trusted Contacts</Text>
+      </TouchableOpacity>
 
-      <Portal>
+      {/* Modal */}
+      {visible && (
         <Modal
-          visible={visible}
-          onDismiss={toggleModal}
+          transparent={true}
           animationType="slide"
-          contentContainerStyle={{
-            padding: 20,
-            backgroundColor: "white", 
-            height: "100%",
-          }}
+          onRequestClose={toggleModal}
         >
-          <Text className="text-xl font-bold mb-4 text-black">Trusted Contacts</Text>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContainer}>
+              <Text style={styles.title}>Trusted Contacts</Text>
+              <TextInput
+                style={styles.searchBar}
+                placeholder="Search Contacts"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+              />
 
-          {contacts.map((contact, index) => (
-            <View
-              key={index}
-              className="flex-row justify-between items-center mb-2"
-            >
-              <Text className="text-lg">
-                {contact.name} - {contact.phone}
-              </Text>
-              <Button
-                mode={contact.primary ? "contained" : "outlined"}
-                className={contact.primary ? "bg-green-500" : "border-gray-500"}
-                onPress={() => setPrimary(index)}
+              {searchQuery.length > 0 && filteredContacts.length > 0 && (
+                <View style={styles.searchResults}>
+                  {filteredContacts.map((contact, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={styles.searchItem}
+                      onPress={() => {
+                        setContacts([
+                          ...contacts,
+                          { name: contact.name, phone: contact.phone },
+                        ]);
+                        setSearchQuery(""); // Clear search bar after adding
+                      }}
+                    >
+                      <Text style={styles.searchItemText}>{contact.name}</Text>
+                      <Text style={styles.searchItemPhone}>
+                        {contact.phone}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+
+              {/* Trusted Contacts List */}
+              <FlatList
+                data={contacts}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={({ item, index }) => (
+                  <View style={styles.contactItem}>
+                    <Text style={styles.contactText}>
+                      {item.name} - {item.phone}
+                    </Text>
+                    <TouchableOpacity
+                      style={styles.removeButton}
+                      onPress={() => removeContact(index)}
+                    >
+                      <Text style={styles.removeButtonText}>Remove</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+                ListEmptyComponent={
+                  <Text style={styles.emptyText}>
+                    No trusted contacts added yet.
+                  </Text>
+                }
+              />
+
+              {/* Close Button */}
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={toggleModal}
               >
-                {contact.primary ? "Primary" : "Set Primary"}
-              </Button>
+                <Text style={styles.closeButtonText}>Close</Text>
+              </TouchableOpacity>
             </View>
-          ))}
-
-          <TextInput
-            label="Name"
-            value={newContactName}
-            onChangeText={setNewContactName}
-            className="mb-2"
-          />
-
-          <TextInput
-            label="Phone"
-            value={newContactPhone}
-            onChangeText={setNewContactPhone}
-            className="mb-4"
-            keyboardType="phone-pad"
-          />
-
-          <Button
-            mode="contained"
-            onPress={addContact}
-            className="bg-blue-500 py-2 mb-4"
-          >
-            Add Contact
-          </Button>
-
-          <Button
-            mode="outlined"
-            onPress={toggleModal}
-            className="border-gray-500 py-2"
-          >
-            Close
-          </Button>
+          </View>
         </Modal>
-      </Portal>
+      )}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 16,
+    backgroundColor: "#f5f5f5",
+  },
+  manageButton: {
+    backgroundColor: "#6200ee",
+    padding: 12,
+    borderRadius: 5,
+  },
+  manageButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContainer: {
+    backgroundColor: "#fff",
+    padding: 20,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 20,
+  },
+  contactItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 15,
+    padding: 10,
+    backgroundColor: "#f9f9f9",
+    borderRadius: 5,
+    borderColor: "#ddd",
+    borderWidth: 1,
+  },
+  contactText: {
+    fontSize: 16,
+  },
+  removeButton: {
+    backgroundColor: "#e53935",
+    padding: 8,
+    borderRadius: 5,
+  },
+  removeButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  emptyText: {
+    textAlign: "center",
+    color: "#888",
+    fontSize: 16,
+    marginVertical: 20,
+  },
+  searchBar: {
+    marginBottom: 10,
+    borderColor: "#ddd",
+    borderWidth: 1,
+    borderRadius: 5,
+    padding: 8,
+  },
+  searchResults: {
+    marginBottom: 20,
+  },
+  searchItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderColor: "#ddd",
+  },
+  searchItemText: {
+    fontSize: 16,
+  },
+  searchItemPhone: {
+    fontSize: 14,
+    color: "#555",
+  },
+  closeButton: {
+    marginTop: 10,
+    backgroundColor: "#6200ee",
+    padding: 12,
+    borderRadius: 5,
+  },
+  closeButtonText: {
+    color: "#fff",
+    textAlign: "center",
+    fontWeight: "bold",
+  },
+});

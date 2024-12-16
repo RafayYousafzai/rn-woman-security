@@ -1,30 +1,34 @@
-import React, { useState } from 'react';
-import { 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  View, 
-  StyleSheet, 
-  KeyboardAvoidingView, 
+import React, { useState } from "react";
+import {
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  StyleSheet,
+  KeyboardAvoidingView,
   Platform,
   TouchableWithoutFeedback,
-  Keyboard 
-} from 'react-native';
-import { useSignUp } from '@clerk/clerk-expo';
-import { useRouter } from 'expo-router';
-import { showToast } from '../../components/Toast';
+  Keyboard,
+} from "react-native";
+import { useSignUp } from "@clerk/clerk-expo";
+import { useRouter } from "expo-router";
+import { showToast } from "../../components/Toast";
 import { MaterialIcons } from "@expo/vector-icons";
+import { collection, doc, setDoc } from "firebase/firestore";
+import { database } from "@/lib/firebase/config";
 
 export default function SignUpScreen() {
   const { isLoaded, signUp, setActive } = useSignUp();
   const router = useRouter();
 
-  const [emailAddress, setEmailAddress] = useState('');
-  const [password, setPassword] = useState('');
+  const [emailAddress, setEmailAddress] = useState("");
+  const [password, setPassword] = useState("");
   const [pendingVerification, setPendingVerification] = useState(false);
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState("");
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [phone, setPhone] = useState("");
+  const [name, setName] = useState("");
 
   const onSignUpPress = async () => {
     if (!isLoaded) return;
@@ -47,7 +51,8 @@ export default function SignUpScreen() {
         password,
       });
 
-      await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
+      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+
       setPendingVerification(true);
       showToast("Verification code sent to your email");
     } catch (err) {
@@ -78,10 +83,16 @@ export default function SignUpScreen() {
         code,
       });
 
-      if (signUpAttempt.status === 'complete') {
+      if (signUpAttempt.status === "complete") {
+        await setDoc(doc(collection(database, "users"), emailAddress), {
+          emailAddress,
+          phone,
+          name,
+        });
+
         await setActive({ session: signUpAttempt.createdSessionId });
         showToast("Account created successfully!");
-        router.replace('/');
+        router.replace("/");
       } else {
         showToast("Verification failed. Please try again.");
         console.error(JSON.stringify(signUpAttempt, null, 2));
@@ -102,20 +113,17 @@ export default function SignUpScreen() {
 
   if (pendingVerification) {
     return (
-      <KeyboardAvoidingView 
-       
-        style={styles.container}
-      >
+      <KeyboardAvoidingView style={styles.container}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={styles.inner}>
             <Text style={styles.title}>Verify Your Email</Text>
-            
+
             <View style={styles.inputContainer}>
-              <MaterialIcons 
-                name="code" 
-                size={24} 
-                color="#4CAF50" 
-                style={styles.inputIcon} 
+              <MaterialIcons
+                name="code"
+                size={24}
+                color="#4CAF50"
+                style={styles.inputIcon}
               />
               <TextInput
                 style={styles.input}
@@ -127,11 +135,8 @@ export default function SignUpScreen() {
               />
             </View>
 
-            <TouchableOpacity 
-              style={[
-                styles.verifyButton, 
-                isLoading && styles.disabledButton
-              ]}
+            <TouchableOpacity
+              style={[styles.verifyButton, isLoading && styles.disabledButton]}
               onPress={onVerifyPress}
               disabled={isLoading}
             >
@@ -146,20 +151,52 @@ export default function SignUpScreen() {
   }
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.inner}>
           <Text style={styles.title}>Create an Account</Text>
-          
           <View style={styles.inputContainer}>
-            <MaterialIcons 
-              name="email" 
-              size={24} 
-              color="#4CAF50" 
-              style={styles.inputIcon} 
+            <MaterialIcons
+              name="phone"
+              size={24}
+              color="#4CAF50"
+              style={styles.inputIcon}
+            />
+            <TextInput
+              style={styles.input}
+              value={phone}
+              placeholder="Enter Phone Number"
+              placeholderTextColor="#888"
+              keyboardType="numeric"
+              onChangeText={setPhone}
+            />
+          </View>
+          <View style={styles.inputContainer}>
+            <MaterialIcons
+              name="supervised-user-circle"
+              size={24}
+              color="#4CAF50"
+              style={styles.inputIcon}
+            />
+            <TextInput
+              style={styles.input}
+              value={name}
+              placeholder="Enter Username"
+              placeholderTextColor="#888"
+              keyboardType="email-address"
+              onChangeText={setName}
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <MaterialIcons
+              name="email"
+              size={24}
+              color="#4CAF50"
+              style={styles.inputIcon}
             />
             <TextInput
               style={styles.input}
@@ -173,11 +210,11 @@ export default function SignUpScreen() {
           </View>
 
           <View style={styles.inputContainer}>
-            <MaterialIcons 
-              name="lock" 
-              size={24} 
-              color="#4CAF50" 
-              style={styles.inputIcon} 
+            <MaterialIcons
+              name="lock"
+              size={24}
+              color="#4CAF50"
+              style={styles.inputIcon}
             />
             <TextInput
               style={styles.input}
@@ -187,23 +224,20 @@ export default function SignUpScreen() {
               secureTextEntry={!isPasswordVisible}
               onChangeText={setPassword}
             />
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={() => setIsPasswordVisible(!isPasswordVisible)}
               style={styles.eyeIcon}
             >
-              <MaterialIcons 
-                name={isPasswordVisible ? "visibility" : "visibility-off"} 
-                size={24} 
-                color="#888" 
+              <MaterialIcons
+                name={isPasswordVisible ? "visibility" : "visibility-off"}
+                size={24}
+                color="#888"
               />
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity 
-            style={[
-              styles.signUpButton, 
-              isLoading && styles.disabledButton
-            ]}
+          <TouchableOpacity
+            style={[styles.signUpButton, isLoading && styles.disabledButton]}
             onPress={onSignUpPress}
             disabled={isLoading}
           >

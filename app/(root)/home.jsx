@@ -1,17 +1,33 @@
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import { View, SafeAreaView, StyleSheet, Dimensions } from "react-native";
+import {
+  View,
+  SafeAreaView,
+  StyleSheet,
+  Dimensions,
+  Pressable,
+  TouchableOpacity,
+} from "react-native";
 import { Text, TouchableRipple } from "react-native-paper";
 import { MaterialIcons } from "@expo/vector-icons";
-import { useUser } from "@clerk/clerk-expo";
+import { useAuth, useUser } from "@clerk/clerk-expo";
 
-const { height, width } = Dimensions.get('window');
+const { height, width } = Dimensions.get("window");
 
 export default function HomePage() {
   const router = useRouter();
+  const { signOut } = useAuth();
+
   const { user } = useUser();
   const [appName] = useState("Wagar");
 
+
+  const handleSignOut = () => {
+    signOut();
+    router.replace("/(auth)/sign-in");
+  };
+
+  
   const menuItems = [
     {
       title: "Emergency Alert",
@@ -40,15 +56,15 @@ export default function HomePage() {
     <SafeAreaView style={styles.container}>
       <View style={styles.headerContainer}>
         <View style={styles.profileSection}>
-          <MaterialIcons 
-            name="account-circle" 
-            size={50} 
-            color="#4A4A4A" 
+          <MaterialIcons
+            name="account-circle"
+            size={50}
+            color="#4A4A4A"
             style={styles.profileIcon}
           />
           <View>
             <Text style={styles.greetingText}>
-              Welcome, {user?.firstName || 'User'}
+              Welcome, {user?.firstName || "User"}
             </Text>
             <Text style={styles.appTagline}>Stay Safe, Stay Connected</Text>
           </View>
@@ -65,17 +81,29 @@ export default function HomePage() {
             rippleColor={`${item.color}40`}
           >
             <View style={styles.menuItemContent}>
-              <View style={[styles.iconContainer, { backgroundColor: item.color }]}>
+              <View
+                style={[styles.iconContainer, { backgroundColor: item.color }]}
+              >
                 <MaterialIcons name={item.icon} size={28} color="#FFF" />
               </View>
               <View style={styles.textContainer}>
-                <Text style={[styles.menuTitle, { color: item.color }]}>{item.title}</Text>
+                <Text style={[styles.menuTitle, { color: item.color }]}>
+                  {item.title}
+                </Text>
                 <Text style={styles.menuDescription}>{item.description}</Text>
               </View>
-              <MaterialIcons name="chevron-right" size={28} color={item.color} />
+              <MaterialIcons
+                name="chevron-right"
+                size={28}
+                color={item.color}
+              />
             </View>
           </TouchableRipple>
         ))}
+
+        <TouchableOpacity onPress={handleSignOut}>
+          <Text>Logout</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -87,9 +115,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#f9f9f9",
   },
   headerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 20,
     paddingVertical: 15,
     backgroundColor: "#FFF",
@@ -98,25 +126,25 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   profileSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   profileIcon: {
     marginRight: 15,
   },
   greetingText: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
   },
   appTagline: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
   },
   appName: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#4A4A4A',
+    fontWeight: "bold",
+    color: "#4A4A4A",
   },
   menuContainer: {
     flex: 1,
