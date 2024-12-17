@@ -67,7 +67,6 @@ async function registerForPushNotificationsAsync() {
 
 const updateUserTokenInDatabase = async (expoPushToken, user) => {
   const primaryEmail = user.primaryEmailAddress?.emailAddress;
-  console.log(primaryEmail);
 
   try {
     const docRef = doc(database, "users", primaryEmail);
