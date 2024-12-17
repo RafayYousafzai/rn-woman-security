@@ -4,7 +4,8 @@ import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
 import { useUser } from "@clerk/clerk-expo";
-const iconPath = require("@/assets/icon.png");
+import { doc, updateDoc } from "firebase/firestore";
+import { database } from "../firebase/config";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -21,13 +22,10 @@ function handleRegistrationError(errorMessage) {
 
 async function registerForPushNotificationsAsync() {
   if (Platform.OS === "android") {
-    Notifications.setNotificationChannelAsync("new-assigned-booking", {
-      name: "New Assigned Booking",
+    Notifications.setNotificationChannelAsync("default", {
       importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 150, 250, 150],
       lightColor: "#0856bc",
-      sound: "notification.wav",
-      icon: iconPath,
     });
   }
 
@@ -68,8 +66,11 @@ async function registerForPushNotificationsAsync() {
 }
 
 const updateUserTokenInDatabase = async (expoPushToken, user) => {
+  const primaryEmail = user.primaryEmailAddress?.emailAddress;
+  console.log(primaryEmail);
+
   try {
-    const docRef = doc(db, "users", user.email);
+    const docRef = doc(database, "users", primaryEmail);
     await updateDoc(docRef, { expoPushToken: expoPushToken });
     return true;
   } catch (error) {
@@ -82,16 +83,15 @@ export default function PushNotifications() {
   const [expoPushToken, setExpoPushToken] = useState("");
   const notificationListener = useRef();
   const responseListener = useRef();
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
 
-  console.log("expoPushToken:", expoPushToken);
   useEffect(() => {
     const initializeNotifications = async () => {
       try {
         const token = await registerForPushNotificationsAsync();
         setExpoPushToken(token ?? "");
 
-        if (token && token.length > 0) {
+        if (token && token.length > 0 && isLoaded) {
           await updateUserTokenInDatabase(token, user);
         }
       } catch (error) {

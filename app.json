@@ -31,7 +31,15 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#0856bc"
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#000",
+          "defaultChannel": "default",
+          "enableBackgroundRemoteNotifications": true
         }
       ]
     ],
