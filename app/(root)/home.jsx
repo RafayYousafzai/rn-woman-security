@@ -5,7 +5,6 @@ import {
   SafeAreaView,
   StyleSheet,
   Dimensions,
-  Pressable,
   TouchableOpacity,
 } from "react-native";
 import { Text, TouchableRipple } from "react-native-paper";
@@ -21,13 +20,11 @@ export default function HomePage() {
   const { user } = useUser();
   const [appName] = useState("Wagar");
 
-
   const handleSignOut = () => {
     signOut();
     router.replace("/(auth)/sign-in");
   };
 
-  
   const menuItems = [
     {
       title: "Emergency Alert",

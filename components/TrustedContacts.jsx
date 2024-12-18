@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Modal,
   TouchableOpacity,
@@ -9,44 +8,42 @@ import {
   View,
   StyleSheet,
 } from "react-native";
-import { database } from "@/lib/firebase/config";
-import { collection, getDocs } from "firebase/firestore";
+import { useFirebase } from "@/context/firebaseContext";
 
 export default function TrustedContacts() {
+  const { users, updateUser, userData } = useFirebase();
+
   const [visible, setVisible] = useState(false);
   const [myContacts, setMyContacts] = useState([]);
-  const [allContacts, setAllContacts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    const user = userData;
+
+    if (user?.trustedContacts) {
+      setMyContacts(user.trustedContacts);
+    }
+  }, [userData]);
 
   const toggleModal = () => setVisible(!visible);
 
-  const removeContact = (index) => {
-    setMyContacts(myContacts.filter((_, i) => i !== index));
+  const filteredContacts = users.filter(
+    (contact) =>
+      contact.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      !myContacts.some((c) => c.phone === contact.phone)
+  );
+
+  const handleUpdateUser = (contact) => {
+    const updatedContacts = [...myContacts, contact];
+    setMyContacts(updatedContacts);
+    updateUser({ trustedContacts: updatedContacts });
   };
 
-  useEffect(() => {
-    const get = async () => {
-      try {
-        const contacts = [];
-        const querySnapshot = await getDocs(collection(database, "users"));
-        querySnapshot.forEach((doc) => {
-          contacts.push({ id: doc.id, ...doc.data() });
-        });
-        setAllContacts(contacts);
-      } catch (error) {
-        console.error("Error getting documents:", error);
-      }
-    };
-    get();
-  }, []);
-
-  const filteredContacts = allContacts
-    .filter(
-      (contact) =>
-        contact.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-        !myContacts.some((contact) => contact.phone === contact.phone)
-    )
-    .slice(0, 4);
+  const handleRemoveContact = (contact) => {
+    const updatedContacts = myContacts.filter((c) => c.phone !== contact.phone);
+    setMyContacts(updatedContacts);
+    updateUser({ trustedContacts: updatedContacts });
+  };
 
   return (
     <View style={styles.container}>
@@ -72,41 +69,40 @@ export default function TrustedContacts() {
                 onChangeText={setSearchQuery}
               />
 
-              {searchQuery.length > 0 && filteredContacts.length > 0 && (
-                <View style={styles.searchResults}>
-                  {filteredContacts.map((contact, index) => (
+              {/* Search Results */}
+              {searchQuery.length > 0 && filteredContacts.length > 0 ? (
+                <FlatList
+                  data={filteredContacts}
+                  keyExtractor={(item) => item.phone}
+                  renderItem={({ item }) => (
                     <TouchableOpacity
-                      key={index}
                       style={styles.searchItem}
                       onPress={() => {
-                        setMyContacts([
-                          ...myContacts,
-                          { name: contact.name, phone: contact.phone },
-                        ]);
-                        setSearchQuery(""); // Clear search bar after adding
+                        handleUpdateUser(item);
+                        setSearchQuery("");
                       }}
                     >
-                      <Text style={styles.searchItemText}>{contact.name}</Text>
-                      <Text style={styles.searchItemPhone}>
-                        {contact.phone}
-                      </Text>
+                      <Text style={styles.searchItemText}>{item.name}</Text>
+                      <Text style={styles.searchItemPhone}>{item.phone}</Text>
                     </TouchableOpacity>
-                  ))}
-                </View>
-              )}
+                  )}
+                />
+              ) : searchQuery.length > 0 ? (
+                <Text style={styles.emptyText}>No contacts found.</Text>
+              ) : null}
 
               {/* Trusted Contacts List */}
               <FlatList
                 data={myContacts}
-                keyExtractor={(item, index) => index.toString()}
-                renderItem={({ item, index }) => (
+                keyExtractor={(item) => item.phone}
+                renderItem={({ item }) => (
                   <View style={styles.contactItem}>
                     <Text style={styles.contactText}>
                       {item.name} - {item.phone}
                     </Text>
                     <TouchableOpacity
                       style={styles.removeButton}
-                      onPress={() => removeContact(index)}
+                      onPress={() => handleRemoveContact(item)}
                     >
                       <Text style={styles.removeButtonText}>Remove</Text>
                     </TouchableOpacity>
