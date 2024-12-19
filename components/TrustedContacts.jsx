@@ -7,8 +7,12 @@ import {
   Text,
   View,
   StyleSheet,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { useFirebase } from "@/context/firebaseContext";
+import { Card, IconButton, Title, Paragraph, Button } from "react-native-paper";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function TrustedContacts() {
   const { users, updateUser, userData } = useFirebase();
@@ -18,14 +22,15 @@ export default function TrustedContacts() {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    const user = userData;
-
-    if (user?.trustedContacts) {
-      setMyContacts(user.trustedContacts);
+    if (userData?.trustedContacts) {
+      setMyContacts(userData.trustedContacts);
     }
   }, [userData]);
 
-  const toggleModal = () => setVisible(!visible);
+  const toggleModal = () => {
+    setSearchQuery("");
+    setVisible(!visible);
+  };
 
   const filteredContacts = users.filter(
     (contact) =>
@@ -48,9 +53,17 @@ export default function TrustedContacts() {
   return (
     <View style={styles.container}>
       {/* Manage Trusted Contacts Button */}
-      <TouchableOpacity style={styles.manageButton} onPress={toggleModal}>
-        <Text style={styles.manageButtonText}>Manage Trusted Contacts</Text>
-      </TouchableOpacity>
+      <Button
+  mode="contained"
+  icon="account-multiple"
+  onPress={toggleModal}
+  style={styles.manageButton}
+  contentStyle={styles.manageButtonContent}
+  labelStyle={styles.manageButtonLabel}
+>
+  Manage Trusted Contacts
+</Button>
+
 
       {/* Modal */}
       {visible && (
@@ -59,71 +72,105 @@ export default function TrustedContacts() {
           animationType="slide"
           onRequestClose={toggleModal}
         >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContainer}>
-              <Text style={styles.title}>Trusted Contacts</Text>
-              <TextInput
-                style={styles.searchBar}
-                placeholder="Search Contacts"
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-              />
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContainer}>
+                <Title style={styles.title}>Trusted Contacts</Title>
+                <Paragraph style={styles.paragraph}>
+                  Add, remove or search for contacts you trust to receive alerts.
+                </Paragraph>
 
-              {/* Search Results */}
-              {searchQuery.length > 0 && filteredContacts.length > 0 ? (
-                <FlatList
-                  data={filteredContacts}
-                  keyExtractor={(item) => item.phone}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity
-                      style={styles.searchItem}
-                      onPress={() => {
-                        handleUpdateUser(item);
-                        setSearchQuery("");
-                      }}
-                    >
-                      <Text style={styles.searchItemText}>{item.name}</Text>
-                      <Text style={styles.searchItemPhone}>{item.phone}</Text>
-                    </TouchableOpacity>
+                <View style={styles.searchContainer}>
+                  <Ionicons name="search" size={20} color="#888" style={{ marginRight: 8 }} />
+                  <TextInput
+                    style={styles.searchBar}
+                    placeholder="Search Contacts"
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                  />
+                  {searchQuery.length > 0 && (
+                    <IconButton
+                      icon="close"
+                      size={20}
+                      onPress={() => setSearchQuery("")}
+                      accessibilityLabel="Clear search"
+                    />
                   )}
-                />
-              ) : searchQuery.length > 0 ? (
-                <Text style={styles.emptyText}>No contacts found.</Text>
-              ) : null}
+                </View>
 
-              {/* Trusted Contacts List */}
-              <FlatList
-                data={myContacts}
-                keyExtractor={(item) => item.phone}
-                renderItem={({ item }) => (
-                  <View style={styles.contactItem}>
-                    <Text style={styles.contactText}>
-                      {item.name} - {item.phone}
-                    </Text>
-                    <TouchableOpacity
-                      style={styles.removeButton}
-                      onPress={() => handleRemoveContact(item)}
-                    >
-                      <Text style={styles.removeButtonText}>Remove</Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
-                ListEmptyComponent={
-                  <Text style={styles.emptyText}>
-                    No trusted contacts added yet.
-                  </Text>
-                }
-              />
+                {/* Search Results */}
+                {searchQuery.length > 0 ? (
+                  filteredContacts.length > 0 ? (
+                    <FlatList
+                      data={filteredContacts}
+                      keyExtractor={(item) => item.phone}
+                      style={styles.searchResults}
+                      renderItem={({ item }) => (
+                        <TouchableOpacity
+                          style={styles.searchItem}
+                          onPress={() => {
+                            handleUpdateUser(item);
+                            setSearchQuery("");
+                            Keyboard.dismiss();
+                          }}
+                        >
+                          <View>
+                            <Text style={styles.searchItemText}>{item.name}</Text>
+                            <Text style={styles.searchItemPhone}>{item.phone}</Text>
+                          </View>
+                          <Ionicons name="add-circle-outline" size={24} color="#6200ee" />
+                        </TouchableOpacity>
+                      )}
+                    />
+                  ) : (
+                    <Text style={styles.emptyText}>No contacts found.</Text>
+                  )
+                ) : null}
 
-              {/* Close Button */}
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={toggleModal}
-              >
-                <Text style={styles.closeButtonText}>Close</Text>
-              </TouchableOpacity>
+                {/* Trusted Contacts List */}
+                <Card style={styles.contactsCard}>
+                  <Card.Title title="Your Trusted Contacts" titleStyle={styles.contactsCardTitle} />
+                  <Card.Content>
+                    {myContacts.length === 0 ? (
+                      <Text style={styles.emptyText}>
+                        No trusted contacts added yet.
+                      </Text>
+                    ) : (
+                      <FlatList
+                        data={myContacts}
+                        keyExtractor={(item) => item.phone}
+                        renderItem={({ item }) => (
+                          <View style={styles.contactItem}>
+                            <View style={{ flexDirection: "column" }}>
+                              <Text style={styles.contactText}>{item.name}</Text>
+                              <Text style={styles.contactPhone}>{item.phone}</Text>
+                            </View>
+                            <IconButton
+                              icon="delete"
+                              color="#e53935"
+                              size={20}
+                              onPress={() => handleRemoveContact(item)}
+                              accessibilityLabel="Remove contact"
+                            />
+                          </View>
+                        )}
+                      />
+                    )}
+                  </Card.Content>
+                </Card>
+
+                {/* Close Button */}
+                <Button
+                  mode="contained"
+                  onPress={toggleModal}
+                  style={styles.closeButton}
+                  icon="close"
+                >
+                  Close
+                </Button>
+              </View>
             </View>
-          </View>
+          </TouchableWithoutFeedback>
         </Modal>
       )}
     </View>
@@ -132,75 +179,72 @@ export default function TrustedContacts() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: "center",
+    backgroundColor: "transparent",
     alignItems: "center",
-    padding: 16,
-    backgroundColor: "#f5f5f5",
   },
   manageButton: {
-    backgroundColor: "#6200ee",
-    padding: 12,
-    borderRadius: 5,
+    backgroundColor: "#1E90FF", // Changed from purple to Dodger Blue
+    borderRadius: 30, // Increased border radius for a more rounded look
+    alignSelf: "center",
+    marginBottom: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    elevation: 5, // Added shadow for Android
+    shadowColor: "#000", // Shadow for iOS
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
-  manageButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
+  manageButtonContent: {
+    flexDirection: "row-reverse", // Icon on the right
+    alignItems: "center",
+  },
+  manageButtonLabel: {
+    color: "#fff", 
+    fontWeight: "600",
+    marginLeft: 8, 
   },
   modalOverlay: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#fff",
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "flex-end",
   },
   modalContainer: {
-    padding: 30,
-    width: "100%",
-    height: "100%",
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    paddingBottom: 40,
+    maxHeight: "85%",
   },
   title: {
-    fontSize: 24,
-    fontWeight: "bold",
+    fontSize: 22,
+    fontWeight: "700",
+    marginBottom: 10,
+    textAlign: "center",
+    color: "#333",
+  },
+  paragraph: {
+    fontSize: 14,
+    color: "#555",
+    textAlign: "center",
     marginBottom: 20,
   },
-  contactItem: {
+  searchContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    backgroundColor: "#f7f7f7",
     alignItems: "center",
+    borderRadius: 10,
+    paddingHorizontal: 10,
     marginBottom: 15,
-    padding: 10,
-    backgroundColor: "#f9f9f9",
-    borderRadius: 5,
-    borderColor: "#ddd",
-    borderWidth: 1,
-  },
-  contactText: {
-    fontSize: 16,
-  },
-  removeButton: {
-    backgroundColor: "#e53935",
-    padding: 8,
-    borderRadius: 5,
-  },
-  removeButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  emptyText: {
-    textAlign: "center",
-    color: "#888",
-    fontSize: 16,
-    marginVertical: 20,
   },
   searchBar: {
-    marginBottom: 10,
-    borderColor: "#ddd",
-    borderWidth: 1,
-    borderRadius: 5,
-    padding: 8,
+    flex: 1,
+    paddingVertical: 8,
+    fontSize: 16,
   },
   searchResults: {
+    maxHeight: 150,
     marginBottom: 20,
   },
   searchItem: {
@@ -213,20 +257,48 @@ const styles = StyleSheet.create({
   },
   searchItemText: {
     fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
   },
   searchItemPhone: {
     fontSize: 14,
     color: "#555",
   },
-  closeButton: {
-    marginTop: 10,
-    backgroundColor: "#6200ee",
-    padding: 12,
-    borderRadius: 5,
-  },
-  closeButtonText: {
-    color: "#fff",
+  emptyText: {
     textAlign: "center",
-    fontWeight: "bold",
+    color: "#888",
+    fontSize: 14,
+    marginVertical: 20,
+  },
+  contactsCard: {
+    borderRadius: 15,
+    marginTop: 10,
+  },
+  contactsCardTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  contactItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderColor: "#ddd",
+  },
+  contactText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+  },
+  contactPhone: {
+    fontSize: 14,
+    color: "#555",
+    marginTop: 2,
+  },
+  closeButton: {
+    marginTop: 20,
+    borderRadius: 25,
+    backgroundColor: "#6200ee",
   },
 });

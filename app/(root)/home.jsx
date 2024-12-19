@@ -6,9 +6,11 @@ import {
   StyleSheet,
   Dimensions,
   TouchableOpacity,
+  FlatList,
+  StatusBar,
 } from "react-native";
-import { Text, TouchableRipple } from "react-native-paper";
-import { MaterialIcons } from "@expo/vector-icons";
+import { Text, TouchableRipple, Card, Title, Paragraph } from "react-native-paper";
+import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { useAuth, useUser } from "@clerk/clerk-expo";
 
 const { height, width } = Dimensions.get("window");
@@ -16,8 +18,8 @@ const { height, width } = Dimensions.get("window");
 export default function HomePage() {
   const router = useRouter();
   const { signOut } = useAuth();
-
   const { user } = useUser();
+
   const [appName] = useState("Wagar");
 
   const handleSignOut = () => {
@@ -25,83 +27,105 @@ export default function HomePage() {
     router.replace("/(auth)/sign-in");
   };
 
+  
+
   const menuItems = [
     {
+      id: "1",
       title: "Emergency Alert",
       icon: "warning",
       color: "#FF5252",
       route: "emergency-alert",
       description: "Instantly send SOS signals with precise location tracking.",
+      additionalInfo: "Use in critical situations",
     },
     {
+      id: "2",
       title: "GPS Tracking",
       icon: "location-on",
       color: "#2196F3",
       route: "gps-tracking",
       description: "Real-time location sharing with trusted contacts.",
+      additionalInfo: "Track your journey",
     },
     {
+      id: "3",
       title: "Safety Resources",
       icon: "info-outline",
       color: "#4CAF50",
       route: "resources",
       description: "Expert safety guides, support, and emergency protocols.",
+      additionalInfo: "Access guides & support",
     },
+    // Add more menu items as needed
   ];
+
+  const renderMenuItem = ({ item }) => (
+    <TouchableRipple
+      onPress={() => router.push(item.route)}
+      rippleColor={`${item.color}30`}
+      borderless={true}
+      style={styles.menuItemWrapper}
+    >
+      <Card style={styles.card}>
+        <Card.Content style={styles.cardContent}>
+          <View style={[styles.iconContainer, { backgroundColor: item.color }]}>
+            <MaterialIcons name={item.icon} size={28} color="#FFF" />
+          </View>
+          <View style={styles.textContainer}>
+            <Title style={styles.menuTitle}>{item.title}</Title>
+            <Paragraph style={styles.menuDescription}>{item.description}</Paragraph>
+            {item.additionalInfo && (
+              <View style={styles.additionalInfo}>
+                <Ionicons name="information-circle-outline" size={16} color="#666" />
+                <Text style={styles.additionalText}>{item.additionalInfo}</Text>
+              </View>
+            )}
+          </View>
+          <MaterialIcons name="chevron-right" size={28} color="#999" />
+        </Card.Content>
+      </Card>
+    </TouchableRipple>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.headerContainer}>
-        <View style={styles.profileSection}>
-          <MaterialIcons
-            name="account-circle"
-            size={50}
-            color="#4A4A4A"
-            style={styles.profileIcon}
-          />
-          <View>
-            <Text style={styles.greetingText}>
-              Welcome, {user?.firstName || "User"}
-            </Text>
-            <Text style={styles.appTagline}>Stay Safe, Stay Connected</Text>
-          </View>
-        </View>
-        <Text style={styles.appName}>{appName}</Text>
-      </View>
-
-      <View style={styles.menuContainer}>
-        {menuItems.map((item, index) => (
-          <TouchableRipple
-            key={index}
-            onPress={() => router.push(item.route)}
-            style={[styles.menuItem, { backgroundColor: `${item.color}10` }]}
-            rippleColor={`${item.color}40`}
-          >
-            <View style={styles.menuItemContent}>
-              <View
-                style={[styles.iconContainer, { backgroundColor: item.color }]}
-              >
-                <MaterialIcons name={item.icon} size={28} color="#FFF" />
-              </View>
-              <View style={styles.textContainer}>
-                <Text style={[styles.menuTitle, { color: item.color }]}>
-                  {item.title}
-                </Text>
-                <Text style={styles.menuDescription}>{item.description}</Text>
-              </View>
-              <MaterialIcons
-                name="chevron-right"
-                size={28}
-                color={item.color}
-              />
+      <StatusBar barStyle="light-content" />
+      {/* Header Section */}
+      <View style={styles.headerWrapper}>
+        <View style={styles.headerContainer}>
+          <View style={styles.profileSection}>
+            <MaterialIcons
+              name="account-circle"
+              size={55}
+              color="#fff"
+              style={styles.profileIcon}
+            />
+            <View style={styles.userInfo}>
+              <Text style={styles.greetingText}>
+                Hello, {user?.firstName || "User"}
+              </Text>
+              <Text style={styles.appTagline}>Stay Safe, Stay Connected</Text>
             </View>
-          </TouchableRipple>
-        ))}
-
-        <TouchableOpacity onPress={handleSignOut}>
-          <Text>Logout</Text>
-        </TouchableOpacity>
+          </View>
+          <Text style={styles.appName}>{appName}</Text>
+        </View>
       </View>
+
+      {/* Menu Items */}
+      <FlatList
+        data={menuItems}
+        renderItem={renderMenuItem}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.menuContainer}
+        showsVerticalScrollIndicator={false}
+      />
+
+      {/* Logout Button */}
+      <TouchableOpacity onPress={handleSignOut} style={styles.logoutContainer}>
+        <MaterialIcons name="logout" size={22} color="#555" style={{ marginRight: 8 }} />
+        <Text style={styles.logoutText}>Logout</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -109,51 +133,66 @@ export default function HomePage() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f9f9f9",
+    backgroundColor: "#f0f4f7",
+  },
+  headerWrapper: {
+    backgroundColor: "#4CAF50", 
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    overflow: "hidden",
+    marginBottom: 20,
+    paddingBottom: 20,
   },
   headerContainer: {
+    paddingHorizontal: 25,
+    paddingTop: 40,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    backgroundColor: "#FFF",
-    borderBottomWidth: 1,
-    borderBottomColor: "#EEE",
-    elevation: 2,
   },
   profileSection: {
     flexDirection: "row",
     alignItems: "center",
   },
   profileIcon: {
-    marginRight: 15,
+    marginRight: 12,
+  },
+  userInfo: {
+    flexDirection: "column",
   },
   greetingText: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#333",
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#fff",
   },
   appTagline: {
     fontSize: 14,
-    color: "#666",
+    color: "#e0e0e0",
+    marginTop: 4,
   },
   appName: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#4A4A4A",
+    fontSize: 26,
+    fontWeight: "800",
+    color: "#fff",
+    letterSpacing: 1,
   },
   menuContainer: {
-    flex: 1,
-    padding: 20,
+    paddingHorizontal: 15,
+    paddingBottom: 20,
   },
-  menuItem: {
-    borderRadius: 15,
+  menuItemWrapper: {
     marginBottom: 15,
-    elevation: 3,
-    overflow: "hidden",
   },
-  menuItemContent: {
+  card: {
+    borderRadius: 15,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 5 },
+    backgroundColor: "#fff",
+  },
+  cardContent: {
     flexDirection: "row",
     alignItems: "center",
     padding: 15,
@@ -170,12 +209,42 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   menuTitle: {
-    fontSize: 19,
+    fontSize: 18,
     fontWeight: "700",
+    color: "#333",
   },
   menuDescription: {
     fontSize: 14,
     color: "#666",
-    marginTop: 5,
+    marginTop: 4,
+  },
+  additionalInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 6,
+  },
+  additionalText: {
+    fontSize: 12,
+    color: "#666",
+    marginLeft: 4,
+  },
+  logoutContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 15,
+    backgroundColor: "#fff",
+    borderRadius: 15,
+    marginHorizontal: 15,
+    marginBottom: 30,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+  },
+  logoutText: {
+    fontSize: 16,
+    color: "#555",
+    fontWeight: "600",
   },
 });
