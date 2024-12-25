@@ -54,16 +54,15 @@ export default function TrustedContacts() {
     <View style={styles.container}>
       {/* Manage Trusted Contacts Button */}
       <Button
-  mode="contained"
-  icon="account-multiple"
-  onPress={toggleModal}
-  style={styles.manageButton}
-  contentStyle={styles.manageButtonContent}
-  labelStyle={styles.manageButtonLabel}
->
-  Manage Trusted Contacts
-</Button>
-
+        mode="contained"
+        icon="account-multiple"
+        onPress={toggleModal}
+        style={styles.manageButton}
+        contentStyle={styles.manageButtonContent}
+        labelStyle={styles.manageButtonLabel}
+      >
+        Manage Trusted Contacts
+      </Button>
 
       {/* Modal */}
       {visible && (
@@ -77,11 +76,17 @@ export default function TrustedContacts() {
               <View style={styles.modalContainer}>
                 <Title style={styles.title}>Trusted Contacts</Title>
                 <Paragraph style={styles.paragraph}>
-                  Add, remove or search for contacts you trust to receive alerts.
+                  Add, remove or search for contacts you trust to receive
+                  alerts.
                 </Paragraph>
 
                 <View style={styles.searchContainer}>
-                  <Ionicons name="search" size={20} color="#888" style={{ marginRight: 8 }} />
+                  <Ionicons
+                    name="search"
+                    size={20}
+                    color="#888"
+                    style={{ marginRight: 8 }}
+                  />
                   <TextInput
                     style={styles.searchBar}
                     placeholder="Search Contacts"
@@ -115,10 +120,18 @@ export default function TrustedContacts() {
                           }}
                         >
                           <View>
-                            <Text style={styles.searchItemText}>{item.name}</Text>
-                            <Text style={styles.searchItemPhone}>{item.phone}</Text>
+                            <Text style={styles.searchItemText}>
+                              {item.name}
+                            </Text>
+                            <Text style={styles.searchItemPhone}>
+                              {item.phone}
+                            </Text>
                           </View>
-                          <Ionicons name="add-circle-outline" size={24} color="#6200ee" />
+                          <Ionicons
+                            name="add-circle-outline"
+                            size={24}
+                            color="#6200ee"
+                          />
                         </TouchableOpacity>
                       )}
                     />
@@ -129,7 +142,10 @@ export default function TrustedContacts() {
 
                 {/* Trusted Contacts List */}
                 <Card style={styles.contactsCard}>
-                  <Card.Title title="Your Trusted Contacts" titleStyle={styles.contactsCardTitle} />
+                  <Card.Title
+                    title="Your Trusted Contacts"
+                    titleStyle={styles.contactsCardTitle}
+                  />
                   <Card.Content>
                     {myContacts.length === 0 ? (
                       <Text style={styles.emptyText}>
@@ -142,8 +158,12 @@ export default function TrustedContacts() {
                         renderItem={({ item }) => (
                           <View style={styles.contactItem}>
                             <View style={{ flexDirection: "column" }}>
-                              <Text style={styles.contactText}>{item.name}</Text>
-                              <Text style={styles.contactPhone}>{item.phone}</Text>
+                              <Text style={styles.contactText}>
+                                {item.name}
+                              </Text>
+                              <Text style={styles.contactPhone}>
+                                {item.phone}
+                              </Text>
                             </View>
                             <IconButton
                               icon="delete"
@@ -200,9 +220,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   manageButtonLabel: {
-    color: "#fff", 
+    color: "#fff",
     fontWeight: "600",
-    marginLeft: 8, 
+    marginLeft: 8,
   },
   modalOverlay: {
     flex: 1,
@@ -266,39 +286,40 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     textAlign: "center",
-    color: "#888",
+    color: "#000",
     fontSize: 14,
     marginVertical: 20,
   },
   contactsCard: {
     borderRadius: 15,
     marginTop: 10,
+    backgroundColor: "#fff",
   },
   contactsCardTitle: {
     fontSize: 18,
     fontWeight: "700",
+    color: "#333",
+    borderBottomWidth: 1,
+    borderColor: "#ddd",
   },
   contactItem: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderColor: "#ddd",
   },
   contactText: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#333",
+    color: "#000",
   },
   contactPhone: {
     fontSize: 14,
-    color: "#555",
+    color: "#000",
     marginTop: 2,
   },
   closeButton: {
     marginTop: 20,
     borderRadius: 25,
-    backgroundColor: "#6200ee",
   },
 });
