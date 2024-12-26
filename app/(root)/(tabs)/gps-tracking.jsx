@@ -3,8 +3,7 @@ import React, { useState } from "react";
 import useLocationFetching from "@/hooks/useLocationFetching"; // Adjust path as needed
 
 export default function GpsTracking() {
-  const { location, errorMsg, startLocationUpdates, stopLocationUpdates } =
-    useLocationFetching();
+  const { startLocationUpdates, stopLocationUpdates } = useLocationFetching();
   const [isTracking, setIsTracking] = useState(false);
 
   const toggleTracking = () => {
@@ -18,7 +17,9 @@ export default function GpsTracking() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Send and notify your live location to trusted contacts </Text>
+      <Text style={styles.title}>
+        Send and notify your live location to trusted contacts{" "}
+      </Text>
       <TouchableOpacity style={styles.toggleButton} onPress={toggleTracking}>
         <Text style={styles.buttonText}>{isTracking ? "Stop" : "Start"}</Text>
       </TouchableOpacity>

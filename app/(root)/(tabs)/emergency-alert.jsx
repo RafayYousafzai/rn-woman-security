@@ -1,8 +1,17 @@
 import * as React from "react";
-import { View, Text, TouchableOpacity, Alert, ActivityIndicator, ScrollView, SafeAreaView } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+  ScrollView,
+  SafeAreaView,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import TrustedContacts from "@/components/TrustedContacts";
 import { useFirebase } from "@/context/firebaseContext";
+import { sendPushNotification } from "@/lib/sendPushNotification";
 import { useRouter } from "expo-router";
 
 export default function EmergencyAlertPage() {
@@ -10,80 +19,25 @@ export default function EmergencyAlertPage() {
   const [loading, setLoading] = React.useState(false);
   const router = useRouter();
 
-  const handleAlert = async () => {
-    if (!userData?.trustedContacts || userData.trustedContacts.length === 0) {
-      Alert.alert(
-        "No Trusted Contacts",
-        "Please add trusted contacts below to send an emergency alert.",
-        [{ text: "OK", style: "default" }]
-      );
-      return;
-    }
-
-    const expoPushTokens = userData.trustedContacts
-      .map((contact) => contact.expoPushToken)
-      .filter((token) => token);
-
-    if (expoPushTokens.length === 0) {
-      Alert.alert(
-        "No Valid Tokens",
-        "None of your contacts have a valid push notification token. Please ensure your contacts have the app installed.",
-        [{ text: "OK", style: "default" }]
-      );
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const payload = {
-        to: expoPushTokens,
-        title: "Emergency Alert",
-        body: "Your family or friends are in danger. Please respond quickly.",
-      };
-
-      const response = await fetch("https://exp.host/--/api/v2/push/send", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to send alert. Status: ${response.status}`);
-      }
-
-      Alert.alert(
-        "Alert Sent Successfully",
-        "Your trusted contacts have been notified of your emergency.",
-        [{ text: "OK", style: "default" }]
-      );
-    } catch (error) {
-      console.error("Error sending alert:", error);
-      Alert.alert(
-        "Error Sending Alert",
-        "We couldn't send your alert. Please check your internet connection and try again.",
-        [{ text: "OK", style: "default" }]
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+  const handleAlert = async () =>
+    sendPushNotification(
+      userData,
+      "Emergency Alert",
+      "This is an emergency alert from your trusted contact."
+    );
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       <ScrollView className="flex-1">
-      <TouchableOpacity
-            onPress={() => router.push("/home")}
-            className="absolute top-4 left-4 p-2 bg-gray-200 rounded-full"
-            style={{
-              elevation: 2,
-            }}
-          >
-            <Ionicons name="arrow-back" size={24} color="#1f2937" />
-          </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => router.push("/home")}
+          className="absolute top-4 left-4 p-2 bg-gray-200 rounded-full"
+          style={{
+            elevation: 2,
+          }}
+        >
+          <Ionicons name="arrow-back" size={24} color="#1f2937" />
+        </TouchableOpacity>
         <View className="px-6 py-8">
           {/* Header Section */}
           <View className="items-center mb-8">
@@ -98,7 +52,9 @@ export default function EmergencyAlertPage() {
           {/* Alert Button Section */}
           <View className="items-center mb-12">
             <TouchableOpacity
-              className={`w-72 aspect-square ${loading ? 'bg-red-400' : 'bg-red-500'} rounded-full justify-center items-center shadow-xl`}
+              className={`w-72 aspect-square ${
+                loading ? "bg-red-400" : "bg-red-500"
+              } rounded-full justify-center items-center shadow-xl`}
               style={{
                 elevation: 8,
               }}
@@ -127,13 +83,10 @@ export default function EmergencyAlertPage() {
           </View>
 
           {/* Trusted Contacts Section */}
-        
-           
-           
-            <View className="">
-              <TrustedContacts />
-            </View>
-      
+
+          <View className="">
+            <TrustedContacts />
+          </View>
 
           {/* Information Card */}
           <View className="bg-blue-50 rounded-2xl p-6">
@@ -144,7 +97,10 @@ export default function EmergencyAlertPage() {
               </Text>
             </View>
             <Text className="text-blue-800">
-              When you press the alert button, all your trusted contacts will receive an immediate notification with your emergency status. Make sure to add trusted contacts who can respond quickly in case of emergency.
+              When you press the alert button, all your trusted contacts will
+              receive an immediate notification with your emergency status. Make
+              sure to add trusted contacts who can respond quickly in case of
+              emergency.
             </Text>
           </View>
         </View>
