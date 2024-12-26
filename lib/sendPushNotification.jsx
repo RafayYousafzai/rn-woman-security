@@ -23,6 +23,9 @@ export const sendPushNotification = async (userData, title, body) => {
     return;
   }
 
+  console.log("Sending alert to:", expoPushTokens);
+  
+
   try {
     const payload = {
       to: expoPushTokens,
@@ -38,6 +41,9 @@ export const sendPushNotification = async (userData, title, body) => {
       },
       body: JSON.stringify(payload),
     });
+
+    console.log(response);
+    
 
     if (!response.ok) {
       throw new Error(`Failed to send alert. Status: ${response.status}`);
