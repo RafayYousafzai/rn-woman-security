@@ -8,14 +8,17 @@ export default function LiveMap() {
     userData?.trustedContacts?.map((contact) => contact.phone) || [];
 
   const filteredContacts = users
-    .filter((contact) => trustedContacts.includes(contact.phone))
+    .filter(
+      (contact) => trustedContacts.includes(contact.phone) && contact.location
+    )
     .map((contact) => ({
       latitude: contact.location.coords.latitude,
       longitude: contact.location.coords.longitude,
       name: contact.name,
+      phone: contact.phone,
     }));
 
-  console.log(filteredContacts);
+  // console.log(filteredContacts);
 
-  return  <Map filteredContacts={filteredContacts} />;
+  return <Map filteredContacts={filteredContacts} />;
 }

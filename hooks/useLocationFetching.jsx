@@ -23,8 +23,8 @@ export default function useLocationFetching() {
       locationSubscriptionRef.current = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.Balanced,
-          timeInterval: 1,
-          distanceInterval: 0.1,
+          timeInterval: 10,
+          distanceInterval: 1,
         },
         (newLocation) => {
           console.log("New location:", newLocation);
@@ -43,6 +43,7 @@ export default function useLocationFetching() {
       console.log("Stopping location updates...");
       locationSubscriptionRef.current.remove();
       locationSubscriptionRef.current = null;
+      isLoaded && updateUserLocationInDatabase(null, user);
     } else {
       console.log("No active location subscription to stop.");
     }
