@@ -21,7 +21,7 @@ extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
   }
 }
 
-rootProject.name = 'rn-woman-security'
+rootProject.name = 'Woman Security'
 
 dependencyResolutionManagement {
   versionCatalogs {
