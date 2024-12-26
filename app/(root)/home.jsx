@@ -9,7 +9,13 @@ import {
   FlatList,
   StatusBar,
 } from "react-native";
-import { Text, TouchableRipple, Card, Title, Paragraph } from "react-native-paper";
+import {
+  Text,
+  TouchableRipple,
+  Card,
+  Title,
+  Paragraph,
+} from "react-native-paper";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { useAuth, useUser } from "@clerk/clerk-expo";
 
@@ -26,8 +32,6 @@ export default function HomePage() {
     signOut();
     router.replace("/(auth)/sign-in");
   };
-
-  
 
   const menuItems = [
     {
@@ -49,10 +53,21 @@ export default function HomePage() {
       additionalInfo: "Track your journey",
     },
     {
+      id: "4",
+      title: "Live Map",
+      icon: "map",
+      color: "#4CAF50",
+      route: "live-map",
+
+      description:
+        "You can see here all the users location who shared with you.",
+      additionalInfo: "Guides & Support your journey",
+    },
+    {
       id: "3",
       title: "Safety Resources",
       icon: "info-outline",
-      color: "#4CAF50",
+      color: "#003049",
       route: "resources",
       description: "Expert safety guides, support, and emergency protocols.",
       additionalInfo: "Access guides & support",
@@ -74,10 +89,16 @@ export default function HomePage() {
           </View>
           <View style={styles.textContainer}>
             <Title style={styles.menuTitle}>{item.title}</Title>
-            <Paragraph style={styles.menuDescription}>{item.description}</Paragraph>
+            <Paragraph style={styles.menuDescription}>
+              {item.description}
+            </Paragraph>
             {item.additionalInfo && (
               <View style={styles.additionalInfo}>
-                <Ionicons name="information-circle-outline" size={16} color="#666" />
+                <Ionicons
+                  name="information-circle-outline"
+                  size={16}
+                  color="#666"
+                />
                 <Text style={styles.additionalText}>{item.additionalInfo}</Text>
               </View>
             )}
@@ -119,13 +140,23 @@ export default function HomePage() {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.menuContainer}
         showsVerticalScrollIndicator={false}
+        ListFooterComponent={() => {
+          return (
+            <TouchableOpacity
+              onPress={handleSignOut}
+              style={styles.logoutContainer}
+            >
+              <MaterialIcons
+                name="logout"
+                size={22}
+                color="#555"
+                style={{ marginRight: 8 }}
+              />
+              <Text style={styles.logoutText}>Logout</Text>
+            </TouchableOpacity>
+          );
+        }}
       />
-
-      {/* Logout Button */}
-      <TouchableOpacity onPress={handleSignOut} style={styles.logoutContainer}>
-        <MaterialIcons name="logout" size={22} color="#555" style={{ marginRight: 8 }} />
-        <Text style={styles.logoutText}>Logout</Text>
-      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -136,7 +167,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f0f4f7",
   },
   headerWrapper: {
-    backgroundColor: "#4CAF50", 
+    backgroundColor: "#4CAF50",
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
     overflow: "hidden",
@@ -234,7 +265,6 @@ const styles = StyleSheet.create({
     padding: 15,
     backgroundColor: "#fff",
     borderRadius: 15,
-    marginHorizontal: 15,
     marginBottom: 30,
     elevation: 2,
     shadowColor: "#000",
