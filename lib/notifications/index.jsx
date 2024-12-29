@@ -84,6 +84,8 @@ export default function PushNotifications() {
   const responseListener = useRef();
   const { user, isLoaded } = useUser();
 
+  console.log({ expoPushToken });
+
   useEffect(() => {
     const initializeNotifications = async () => {
       try {

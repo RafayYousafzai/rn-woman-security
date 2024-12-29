@@ -22,8 +22,8 @@ export default function EmergencyAlertPage() {
   const handleAlert = async () =>
     sendPushNotification(
       userData,
-      "Emergency Alert",
-      "This is an emergency alert from your trusted contact."
+      `Emergency Alert Sent by ${userData.name}`,
+      `Your family or friends are in danger. Please respond quickly. ${userData.name} needs your help! phone: ${userData.phone}`
     );
 
   return (
