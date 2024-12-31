@@ -1,15 +1,18 @@
 import { openURL } from "expo-linking";
-import React from "react";
-import { View, StyleSheet, FlatList, StatusBar, TouchableOpacity } from "react-native";
-import { Text, TouchableRipple, Card, Title, Paragraph } from "react-native-paper";
+import React, { useState } from "react";
+import { View, StyleSheet, FlatList, StatusBar, TouchableOpacity, Modal } from "react-native";
+import { Text, TouchableRipple, Card, Title, Paragraph, Button } from "react-native-paper";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
 const ResourcesPage = () => {
+  const router = useRouter();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedResource, setSelectedResource] = useState(null);
+
   const handleCall = (phoneNumber) => {
     openURL(`tel:${phoneNumber}`);
   };
-    const router = useRouter();
 
   const handleMessage = (phoneNumber) => {
     openURL(`sms:${phoneNumber}`);
@@ -21,7 +24,7 @@ const ResourcesPage = () => {
       title: "Emergency Helpline",
       icon: "warning",
       color: "#FF5252",
-      action: () => handleCall("112"),
+      numbers: ["112", "999", "911"], // Multiple numbers
       actionLabel: "Call",
       type: "call",
       description: "Immediate assistance during emergencies.",
@@ -31,7 +34,7 @@ const ResourcesPage = () => {
       title: "Mental Health Support",
       icon: "psychology",
       color: "#2196F3",
-      action: () => handleCall("1800123456"),
+      numbers: ["1800123456", "0800102030", "130012345"], // Multiple numbers
       actionLabel: "Call",
       type: "call",
       description: "Support for mental health and well-being.",
@@ -41,7 +44,7 @@ const ResourcesPage = () => {
       title: "Domestic Violence Helpline",
       icon: "security",
       color: "#FF9800",
-      action: () => handleCall("100"),
+      numbers: ["100", "1800202121", "911"], // Multiple numbers
       actionLabel: "Call",
       type: "call",
       description: "Help and support for domestic violence victims.",
@@ -51,7 +54,7 @@ const ResourcesPage = () => {
       title: "SMS Support",
       icon: "sms",
       color: "#4CAF50",
-      action: () => handleMessage("12345"),
+      numbers: ["12345", "67890", "112"], // Multiple numbers
       actionLabel: "Message",
       type: "message",
       description: "Send an SMS for support and information.",
@@ -60,7 +63,10 @@ const ResourcesPage = () => {
 
   const renderResource = ({ item }) => (
     <TouchableRipple
-      onPress={item.action}
+      onPress={() => {
+        setSelectedResource(item);
+        setModalVisible(true); // Show modal to select a number
+      }}
       rippleColor={`${item.color}30`}
       borderless={true}
       style={styles.ripple}
@@ -87,17 +93,24 @@ const ResourcesPage = () => {
     </TouchableRipple>
   );
 
+  const handleSelectNumber = (number) => {
+    if (selectedResource.type === "call") {
+      handleCall(number);
+    } else {
+      handleMessage(number);
+    }
+    setModalVisible(false); // Close the modal after selection
+  };
+
   return (
     <View style={styles.container}>
-        <TouchableOpacity
-                  onPress={() => router.push("/home")}
-                  className="absolute top-4 left-4 p-2 bg-gray-200 rounded-full"
-                  style={{
-                    elevation: 2,
-                  }}
-                >
-                  <Ionicons name="arrow-back" size={24} color="#1f2937" />
-                </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => router.back()}
+        className="absolute top-4 left-4 p-2 bg-gray-200 rounded-full"
+        style={{ elevation: 2 }}
+      >
+        <Ionicons name="arrow-back" size={24} color="#1f2937" />
+      </TouchableOpacity>
       <StatusBar barStyle="dark-content" backgroundColor="#f0f4f7" />
       <Text style={styles.header}>Resources</Text>
 
@@ -108,6 +121,33 @@ const ResourcesPage = () => {
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
       />
+
+      {/* Modal for selecting a number */}
+      <Modal
+        visible={modalVisible}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Select a number</Text>
+            {selectedResource?.numbers.map((number, index) => (
+              <Button
+                key={index}
+                mode="contained"
+                style={styles.modalButton}
+                onPress={() => handleSelectNumber(number)}
+              >
+                {number}
+              </Button>
+            ))}
+            <Button  mode="text" onPress={() => setModalVisible(false)} style={styles.closeButton}>
+              Close
+            </Button>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -177,5 +217,31 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     marginTop: 4,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContainer: {
+    backgroundColor: "white",
+    padding: 20,
+    borderRadius: 10,
+    alignItems: "center",
+    width: 300,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 20,
+    color: "#333",
+  },
+  modalButton: {
+    marginVertical: 5,
+    width: "100%",
+  },
+  closeButton: {
+    marginTop: 10,
   },
 });

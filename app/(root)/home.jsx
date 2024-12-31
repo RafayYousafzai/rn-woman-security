@@ -17,14 +17,13 @@ import {
   Paragraph,
 } from "react-native-paper";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
-import { useAuth, useUser } from "@clerk/clerk-expo";
-
-const { height, width } = Dimensions.get("window");
+import { useAuth } from "@clerk/clerk-expo";
+import { useFirebase } from "@/context/firebaseContext";
 
 export default function HomePage() {
   const router = useRouter();
   const { signOut } = useAuth();
-  const { user } = useUser();
+  const { userData } = useFirebase();
 
   const [appName] = useState("Wagar");
 
@@ -116,17 +115,20 @@ export default function HomePage() {
       <View style={styles.headerWrapper}>
         <View style={styles.headerContainer}>
           <View style={styles.profileSection}>
-            <MaterialIcons
+            {/* <MaterialIcons
               name="account-circle"
               size={55}
               color="#fff"
               style={styles.profileIcon}
-            />
+            /> */}
             <View style={styles.userInfo}>
               <Text style={styles.greetingText}>
-                Hello, {user?.firstName || "User"}
+                Hello, {userData?.name || "User"}
               </Text>
-              <Text style={styles.appTagline}>Stay Safe, Stay Connected</Text>
+              <Text style={styles.appTagline}>
+                Girls: Stay Safe, Stay Connected. Your support network starts
+                here.
+              </Text>
             </View>
           </View>
           <Text style={styles.appName}>{appName}</Text>
@@ -176,7 +178,7 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     paddingHorizontal: 25,
-    paddingTop: 40,
+    paddingTop: 20,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -198,14 +200,16 @@ const styles = StyleSheet.create({
   },
   appTagline: {
     fontSize: 14,
-    color: "#e0e0e0",
+    color: "#fff",
     marginTop: 4,
+    width: Dimensions.get("window").width - 180,
   },
   appName: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: "800",
     color: "#fff",
     letterSpacing: 1,
+    textTransform: "uppercase",
   },
   menuContainer: {
     paddingHorizontal: 15,
