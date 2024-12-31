@@ -1,6 +1,8 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import React, { useState } from "react";
 import useLocationFetching from "@/hooks/useLocationFetching"; // Adjust path as needed
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 
 export default function GpsTracking() {
   const { startLocationUpdates, stopLocationUpdates } = useLocationFetching();
@@ -17,6 +19,16 @@ export default function GpsTracking() {
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity
+        onPress={() => router.back()}
+        className="absolute top-4 left-4 p-2 bg-gray-200 rounded-full"
+        style={{
+          elevation: 2,
+        }}
+      >
+        <Ionicons name="arrow-back" size={24} color="#1f2937" />
+      </TouchableOpacity>
+
       <Text style={styles.title}>
         Send and notify your live location to trusted contacts{" "}
       </Text>

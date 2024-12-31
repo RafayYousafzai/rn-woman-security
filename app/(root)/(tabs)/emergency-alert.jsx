@@ -30,7 +30,7 @@ export default function EmergencyAlertPage() {
     <SafeAreaView className="flex-1 bg-gray-50">
       <ScrollView className="flex-1">
         <TouchableOpacity
-          onPress={() => router.push("/home")}
+          onPress={() => router.back()}
           className="absolute top-4 left-4 p-2 bg-gray-200 rounded-full"
           style={{
             elevation: 2,
