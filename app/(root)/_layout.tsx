@@ -1,12 +1,10 @@
 import React from "react";
 import { Stack } from "expo-router/stack";
-import PushNotifications from "@/lib/notifications/index";
 import { FirebaseProvider } from "@/context/firebaseContext";
 
 export default function Layout() {
   return (
     <FirebaseProvider>
-      <PushNotifications />
       <Stack
         screenOptions={{
           headerShown: false,

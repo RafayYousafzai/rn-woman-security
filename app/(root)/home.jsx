@@ -19,6 +19,7 @@ import {
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 import { useAuth } from "@clerk/clerk-expo";
 import { useFirebase } from "@/context/firebaseContext";
+import PushNotifications from "@/lib/notifications";
 
 export default function HomePage() {
   const router = useRouter();
@@ -110,6 +111,8 @@ export default function HomePage() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <PushNotifications />
+
       <StatusBar barStyle="light-content" />
       {/* Header Section */}
       <View style={styles.headerWrapper}>

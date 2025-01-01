@@ -1,11 +1,8 @@
-import { Alert } from "react-native";
-
 export const sendPushNotification = async (userData, title, body) => {
   if (!userData?.trustedContacts || userData.trustedContacts.length === 0) {
-    Alert.alert(
+    console.log(
       "No Trusted Contacts",
-      "Please add trusted contacts below to send an emergency alert.",
-      [{ text: "OK", style: "default" }]
+      "Please add trusted contacts below to send an emergency alert."
     );
     return;
   }
@@ -15,16 +12,14 @@ export const sendPushNotification = async (userData, title, body) => {
     .filter((token) => token);
 
   if (expoPushTokens.length === 0) {
-    Alert.alert(
+    console.log(
       "No Valid Tokens",
-      "None of your contacts have a valid push notification token. Please ensure your contacts have the app installed.",
-      [{ text: "OK", style: "default" }]
+      "None of your contacts have a valid push notification token. Please ensure your contacts have the app installed."
     );
     return;
   }
 
   console.log("Sending alert to:", expoPushTokens);
-  
 
   try {
     const payload = {
@@ -42,24 +37,15 @@ export const sendPushNotification = async (userData, title, body) => {
       body: JSON.stringify(payload),
     });
 
-    console.log(response);
-    
-
     if (!response.ok) {
       throw new Error(`Failed to send alert. Status: ${response.status}`);
     }
 
-    Alert.alert(
+    console.log(
       "Alert Sent Successfully",
-      "Your trusted contacts have been notified of your emergency.",
-      [{ text: "OK", style: "default" }]
+      "Your trusted contacts have been notified of your emergency."
     );
   } catch (error) {
     console.error("Error sending alert:", error);
-    Alert.alert(
-      "Error Sending Alert",
-      "We couldn't send your alert. Please check your internet connection and try again.",
-      [{ text: "OK", style: "default" }]
-    );
   }
 };
