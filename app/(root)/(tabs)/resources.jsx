@@ -1,18 +1,27 @@
 import { openURL } from "expo-linking";
 import React, { useState } from "react";
-import { View, StyleSheet, FlatList, StatusBar, TouchableOpacity, Modal } from "react-native";
-import { Text, TouchableRipple, Card, Title, Paragraph, Button } from "react-native-paper";
+import {
+  View,
+  StyleSheet,
+  FlatList,
+  StatusBar,
+  TouchableOpacity,
+  Modal,
+} from "react-native";
+import {
+  Text,
+  TouchableRipple,
+  Card,
+  Title,
+  Paragraph,
+  Button,
+} from "react-native-paper";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { router } from "expo-router";
 
 const ResourcesPage = () => {
-  const router = useRouter();
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedResource, setSelectedResource] = useState(null);
-
-  const handleCall = (phoneNumber) => {
-    openURL(`tel:${phoneNumber}`);
-  };
 
   const handleMessage = (phoneNumber) => {
     openURL(`sms:${phoneNumber}`);
@@ -21,51 +30,73 @@ const ResourcesPage = () => {
   const resources = [
     {
       id: "1",
-      title: "Emergency Helpline",
+      title: "Women's Aid Organization (WAO)",
       icon: "warning",
       color: "#FF5252",
-      numbers: ["112", "999", "911"], // Multiple numbers
-      actionLabel: "Call",
+      numbers: [
+        {
+          label: "Call",
+          details: "Mon-Fri: 9am-5pm, Sat-Sun: 8am-4pm",
+          phone: "03-30008858",
+        },
+        { label: "WhatsApp (TINA)", details: "", phone: "018-9888058" },
+      ],
       type: "call",
-      description: "Immediate assistance during emergencies.",
+      description:
+        "Case management, assistance with police reports, connecting to medical aid, mental health support, and shelter.",
     },
     {
       id: "2",
-      title: "Mental Health Support",
+      title: "International Catholic Migration Commission (ICMC)",
       icon: "psychology",
       color: "#2196F3",
-      numbers: ["1800123456", "0800102030", "130012345"], // Multiple numbers
-      actionLabel: "Call",
+      numbers: [
+        {
+          label: "Arabic, Somali & English",
+          details: "",
+          phone: "+6016 204 0291",
+        },
+      ],
       type: "call",
-      description: "Support for mental health and well-being.",
+      description:
+        "Case management, mental health and psychosocial support, shelter, and service referrals.",
     },
     {
       id: "3",
-      title: "Domestic Violence Helpline",
+      title: "Asylum Access",
       icon: "security",
       color: "#FF9800",
-      numbers: ["100", "1800202121", "911"], // Multiple numbers
-      actionLabel: "Call",
+      numbers: [
+        { label: "Hotline", details: "", phone: "+60322015439" },
+        { label: "WhatsApp", details: "", phone: "+60172094059" },
+      ],
       type: "call",
-      description: "Help and support for domestic violence victims.",
+      description:
+        "Legal advice and assistance for employment disputes and related issues.",
     },
     {
       id: "4",
-      title: "SMS Support",
-      icon: "sms",
-      color: "#4CAF50",
-      numbers: ["12345", "67890", "112"], // Multiple numbers
-      actionLabel: "Message",
-      type: "message",
-      description: "Send an SMS for support and information.",
+      title: "Clinks",
+      icon: "security-update-good",
+      color: "#FF9800",
+      numbers: [
+        {
+          details:
+            "Jalan Pudu > Tzu-Chi Free Clinic Seri Kembangan > Klinik Amal Muhajir Selayang > Klinik QFFD - IMARET",
+        },
+      ],
     },
   ];
+
+  const handleCall = (phoneNumber) => {
+    openURL(`tel:${phoneNumber}`);
+  };
 
   const renderResource = ({ item }) => (
     <TouchableRipple
       onPress={() => {
         setSelectedResource(item);
-        setModalVisible(true); // Show modal to select a number
+        setModalVisible(true);
       }}
       rippleColor={`${item.color}30`}
       borderless={true}
@@ -78,15 +109,23 @@ const ResourcesPage = () => {
           </View>
           <View style={styles.textContainer}>
             <Title style={styles.resourceTitle}>{item.title}</Title>
-            <Paragraph style={styles.resourceDescription}>{item.description}</Paragraph>
+            <Paragraph style={styles.resourceDescription}>
+              {item.description}
+            </Paragraph>
           </View>
           <View style={styles.actionContainer}>
             {item.type === "call" ? (
               <Ionicons name="call-outline" size={24} color={item.color} />
             ) : (
-              <Ionicons name="chatbubble-ellipses-outline" size={24} color={item.color} />
+              <Ionicons
+                name="chatbubble-ellipses-outline"
+                size={24}
+                color={item.color}
+              />
             )}
-            <Text style={[styles.actionLabel, { color: item.color }]}>{item.actionLabel}</Text>
+            <Text style={[styles.actionLabel, { color: item.color }]}>
+              {item.actionLabel}
+            </Text>
           </View>
         </Card.Content>
       </Card>
@@ -99,7 +138,7 @@ const ResourcesPage = () => {
     } else {
       handleMessage(number);
     }
-    setModalVisible(false); // Close the modal after selection
+    setModalVisible(false);
   };
 
   return (
@@ -113,7 +152,6 @@ const ResourcesPage = () => {
       </TouchableOpacity>
       <StatusBar barStyle="dark-content" backgroundColor="#f0f4f7" />
       <Text style={styles.header}>Resources</Text>
-
       <FlatList
         data={resources}
         renderItem={renderResource}
@@ -121,8 +159,6 @@ const ResourcesPage = () => {
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
       />
-
-      {/* Modal for selecting a number */}
       <Modal
         visible={modalVisible}
         animationType="fade"
@@ -131,18 +167,26 @@ const ResourcesPage = () => {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Select a number</Text>
+            <Text style={styles.modalTitle}>{selectedResource?.title}</Text>
             {selectedResource?.numbers.map((number, index) => (
-              <Button
+              <TouchableOpacity
                 key={index}
-                mode="contained"
                 style={styles.modalButton}
-                onPress={() => handleSelectNumber(number)}
+                onPress={() => number.phone && handleSelectNumber(number.phone)}
               >
-                {number}
-              </Button>
+                <Text style={styles.modalButtonText}>
+                  {`${number.label ? number.label + ": " : ""}${
+                    number.details || number.phone
+                  }`}
+                </Text>
+              </TouchableOpacity>
             ))}
-            <Button  mode="text" onPress={() => setModalVisible(false)} style={styles.closeButton}>
+            <Button
+              mode="text"
+              onPress={() => setModalVisible(false)}
+              style={styles.closeButton}
+              textColor="black"
+            >
               Close
             </Button>
           </View>
@@ -240,8 +284,15 @@ const styles = StyleSheet.create({
   modalButton: {
     marginVertical: 5,
     width: "100%",
+    backgroundColor: "#f1faee",
+  },
+  modalButtonText: {
+    color: "#000",
+    marginHorizontal: 15,
+    padding: 10,
   },
   closeButton: {
     marginTop: 10,
+    color: "#000",
   },
 });

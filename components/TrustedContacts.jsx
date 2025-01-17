@@ -235,7 +235,6 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     padding: 20,
     paddingBottom: 40,
-    maxHeight: "85%",
   },
   title: {
     fontSize: 22,
