@@ -1,14 +1,14 @@
 import React, { useState, useCallback } from "react";
-import { 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  View, 
-  StyleSheet, 
-  KeyboardAvoidingView, 
+import {
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  StyleSheet,
+  KeyboardAvoidingView,
   Platform,
   TouchableWithoutFeedback,
-  Keyboard 
+  Keyboard,
 } from "react-native";
 import { useSignIn } from "@clerk/clerk-expo";
 import { Link, useRouter } from "expo-router";
@@ -48,7 +48,7 @@ export default function Page() {
         showToast("Sign-in failed. Please try again.");
         console.error(JSON.stringify(signInAttempt, null, 2));
       }
-    }catch (err) {
+    } catch (err) {
       if (err instanceof Error) {
         const errorMessage = err.message || "An error occurred";
         showToast(errorMessage);
@@ -57,27 +57,28 @@ export default function Page() {
         showToast("An unexpected error occurred");
         console.error("Unknown error:", err);
       }
-    }
-    finally {
+    } finally {
       setIsLoading(false);
     }
   }, [isLoaded, emailAddress, password]);
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.container}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.inner}>
-          <Text style={styles.title}>Welcome Back</Text>
-          
+          <Text style={styles.title}>Welcome to</Text>
+          <Text style={styles.subTitle}>Women & Girls at risk </Text>
+          <Text style={styles.subTitle2}> (WAGAR)</Text>
+
           <View style={styles.inputContainer}>
-            <MaterialIcons 
-              name="email" 
-              size={24} 
-              color="#4CAF50" 
-              style={styles.inputIcon} 
+            <MaterialIcons
+              name="email"
+              size={24}
+              color="#4CAF50"
+              style={styles.inputIcon}
             />
             <TextInput
               style={styles.input}
@@ -91,11 +92,11 @@ export default function Page() {
           </View>
 
           <View style={styles.inputContainer}>
-            <MaterialIcons 
-              name="lock" 
-              size={24} 
-              color="#4CAF50" 
-              style={styles.inputIcon} 
+            <MaterialIcons
+              name="lock"
+              size={24}
+              color="#4CAF50"
+              style={styles.inputIcon}
             />
             <TextInput
               style={styles.input}
@@ -105,23 +106,20 @@ export default function Page() {
               secureTextEntry={!isPasswordVisible}
               onChangeText={setPassword}
             />
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={() => setIsPasswordVisible(!isPasswordVisible)}
               style={styles.eyeIcon}
             >
-              <MaterialIcons 
-                name={isPasswordVisible ? "visibility" : "visibility-off"} 
-                size={24} 
-                color="#888" 
+              <MaterialIcons
+                name={isPasswordVisible ? "visibility" : "visibility-off"}
+                size={24}
+                color="#888"
               />
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity 
-            style={[
-              styles.signInButton, 
-              isLoading && styles.disabledButton
-            ]}
+          <TouchableOpacity
+            style={[styles.signInButton, isLoading && styles.disabledButton]}
             onPress={onSignInPress}
             disabled={isLoading}
           >
@@ -157,8 +155,22 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    marginBottom: 30,
+    marginBottom: 10,
     color: "#333",
+    textAlign: "center",
+  },
+  subTitle: {
+    fontSize: 28,
+    fontWeight: "bold",
+    marginBottom: 10,
+    color: "#4CAF50",
+    textAlign: "center",
+  },
+  subTitle2: {
+    fontSize: 28,
+    fontWeight: "bold",
+    marginBottom: 30,
+    color: "#4CAF50",
     textAlign: "center",
   },
   inputContainer: {
