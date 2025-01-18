@@ -84,8 +84,6 @@ export default function PushNotifications() {
   const responseListener = useRef();
   const { user, isLoaded } = useUser();
 
-  console.log({ expoPushToken });
-
   useEffect(() => {
     const initializeNotifications = async () => {
       try {
@@ -93,6 +91,7 @@ export default function PushNotifications() {
         setExpoPushToken(token ?? "");
 
         if (token && token.length > 0 && isLoaded) {
+          console.log("updateUserTokenInDatabase", { expoPushToken });
           await updateUserTokenInDatabase(token, user);
         }
       } catch (error) {
@@ -112,7 +111,7 @@ export default function PushNotifications() {
         Notifications.removeNotificationSubscription(responseListener.current);
       }
     };
-  }, []);
+  }, [expoPushToken]);
 
   return <View />;
 }
